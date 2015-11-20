@@ -104,6 +104,30 @@ class PaymentApi extends ApiAbstract
     }
 
     /**
+     * Get Bank list for PSE
+     *
+     * @return array
+     * @throws PaymentException
+     */
+    public function bankList()
+    {
+        try {
+            $json     = '{"command": "GET_BANKS_LIST",
+               "bankListInformation": {
+               "paymentMethod": "PSE",
+               "paymentCountry": "CO"
+            }
+            }';
+            $json     = $this->addMetadata($json);
+            $response = $this->curlRequest($json);
+
+            return $response->banks;
+        } catch (Exception $e) {
+            throw new PaymentException($e->getMessage(), $e->getCode());
+        }
+    }
+
+    /**
      * Compute signature of order.
      *
      * @param string $referenceCode
