@@ -9,7 +9,8 @@ namespace PayU\Payment;
 use \PayU\Payment\PaymentException;
 use \PayU\Api\ApiAbstract;
 use \PayU\Api\ApiStatus;
-
+use PayU\Entity\Transaction\BankTransferEntity;
+use PayU\Entity\Transaction\ExtraParametersEntity;
 use \PayU\Payment\PaymentTypes;
 use \PayU\Entity\RequestEntity;
 use \PayU\Entity\Transaction\TransactionEntity;
@@ -141,6 +142,7 @@ class PaymentApi extends ApiAbstract
      */
     private function authorizeRequest(TransactionEntity $transaction)
     {
+
         $requestEntity = new RequestEntity();
         $request       = $requestEntity->setCommand('SUBMIT_TRANSACTION')
                                        ->setMerchant($this->credentials)
@@ -172,14 +174,15 @@ class PaymentApi extends ApiAbstract
             $expirationDate = $date->format('Y-m-d') . 'T' . $date->format('h:i:s');
             $xmlTransaction->addChild('expirationDate', $expirationDate);
         }
-
-        $creditCard = $transaction->getCreditCard();
-        if (!$creditCard->isEmpty()) {
-            $xmlCreditCard = $xmlTransaction->addChild('creditCard');
-            $xmlCreditCard->addChild('number', $creditCard->getNumber());
-            $xmlCreditCard->addChild('securityCode', $creditCard->getSecurityCode());
-            $xmlCreditCard->addChild('expirationDate', $creditCard->getExpirationDate());
-            $xmlCreditCard->addChild('name', $creditCard->getName());
+        if($transaction->getPaymentMethod() != 'PSE') {
+            $creditCard = $transaction->getCreditCard();
+            if (!$creditCard->isEmpty()) {
+                $xmlCreditCard = $xmlTransaction->addChild('creditCard');
+                $xmlCreditCard->addChild('number', $creditCard->getNumber());
+                $xmlCreditCard->addChild('securityCode', $creditCard->getSecurityCode());
+                $xmlCreditCard->addChild('expirationDate', $creditCard->getExpirationDate());
+                $xmlCreditCard->addChild('name', $creditCard->getName());
+            }
         }
 
         $payer = $transaction->getPayer();
@@ -267,11 +270,19 @@ class PaymentApi extends ApiAbstract
             $additionalValue->addChild('value', $value['additionalValue']['value']);
         }
 
-        $extraParameters    = $transaction->getExtraParameters()->toArray();
+        if($transaction->getPaymentMethod() != 'PSE') {
+            /** @var ExtraParametersEntity $extraParameters */
+            $extraParameters    = $transaction->getExtraParameters()->toArray();
+        }
+        else{
+            /** @var BankTransferEntity $extraParameters */
+            $extraParameters    = $transaction->getExtraParameters()->toArray();
+        }
+
         $xmlExtraParameters = $xmlTransaction->addChild('extraParameters');
         if (count($extraParameters) > 0) {
             foreach ($extraParameters as $label => $value) {
-                $entry  = $xmlExtraParameters->addChild('entry');
+                $entry = $xmlExtraParameters->addChild('entry');
                 $entry->addChild('string', $label);
                 $entry->addChild('string', $value);
             }
@@ -281,6 +292,7 @@ class PaymentApi extends ApiAbstract
         $response = $this->curlRequestXml(
             $this->xmlRequest->asXML()
         );
+
         $this->resetRequest();
 
         return $response;

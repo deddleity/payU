@@ -262,7 +262,6 @@ abstract class ApiAbstract implements ApiInterface
             'Content-Length: ' . strlen($json),
         );
         //HTTP headers.
-
         try {
             //cUrl request.
             $ch = curl_init($this->getApiUrl());

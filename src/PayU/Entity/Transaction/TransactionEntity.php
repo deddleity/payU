@@ -366,10 +366,10 @@ class TransactionEntity extends EntityAbstract
     /**
      * Set extra parameters registry.
      *
-     * @param  ExtraParametersEntity $extraParameters
+     * @param  $extraParameters
      * @return TransactionEntity
      */
-    public function setExtraParameters(ExtraParametersEntity $extraParameters)
+    public function setExtraParameters($extraParameters)
     {
         $this->extraParameters = $extraParameters;
         return $this;
@@ -410,6 +410,7 @@ class TransactionEntity extends EntityAbstract
      */
     public function toArray()
     {
+        if($this->paymentMethod == 'creditCard'){
         return array
         (
             'expiration'      => $this->expiration,
@@ -424,5 +425,20 @@ class TransactionEntity extends EntityAbstract
             'payer'           => $this->payer->toArray(),
             'extraParameters' => $this->extraParameters->toArray(),
         );
+        }elseif($this->paymentMethod == 'PSE'){
+            return array
+            (
+                'expiration'      => $this->expiration,
+                'type'            => $this->type,
+                'paymentMethod'   => $this->paymentMethod,
+                'paymentCountry'  => $this->paymentCountry,
+                'ipAddress'       => $this->ipAddress,
+                'cookie'          => $this->cookie,
+                'userAgent'       => $this->userAgent,
+                'order'           => $this->order->toArray(),
+                'payer'           => $this->payer->toArray(),
+                'extraParameters' => $this->extraParameters->toArray(),
+            );
+        }
     }
 }
