@@ -194,7 +194,7 @@ class PaymentApi extends ApiAbstract
         $expiration = $transaction->getExpiration();
         if ($expiration > 0) {
             $date = new \DateTime('now');
-            $date->modify(sprintf('+%d day', $expiration));
+            $date->modify(sprintf('+%d hours', $expiration));
             $expirationDate = $date->format('Y-m-d') . 'T' . $date->format('h:i:s');
             $xmlTransaction->addChild('expirationDate', $expirationDate);
         }
