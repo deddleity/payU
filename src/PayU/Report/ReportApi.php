@@ -134,6 +134,7 @@ class ReportApi extends ApiAbstract
      */
     public function fetchByReferenceCode($referenceCode)
     {
+        $this->resetRequest();
         try {
             $this->buildXmlObject('ORDER_DETAIL_BY_REFERENCE_CODE');
             $this->addReferenceCode($referenceCode);
